@@ -55,3 +55,7 @@ export interface ShowcaseDiscordData {
   user: Discord.User
   reaction: Discord.MessageReaction
 }
+
+export interface GitHubLicenseData {
+  data: { resource: { licenseInfo: { spdxId: string } | null } }
+}
