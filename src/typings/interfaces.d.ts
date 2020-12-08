@@ -57,5 +57,5 @@ export interface ShowcaseDiscordData {
 }
 
 export interface GitHubLicenseData {
-  data: { resource: { licenseInfo: { spdxId: string } | null } }
+  resource: { licenseInfo: { spdxId: string } | null }
 }

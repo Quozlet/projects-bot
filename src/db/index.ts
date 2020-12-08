@@ -194,8 +194,8 @@ export async function hasSPDXLicense (submission: ProjectSubmission): Promise<bo
         }
       }
     }
-  }  
+  }
   `
   const licenseData = await ghClient.request(ghQuery, { url: submission.links.source })
-  return !!(licenseData.data as GitHubLicenseData)?.data.resource?.licenseInfo
+  return !!(licenseData as GitHubLicenseData)?.resource?.licenseInfo
 }
