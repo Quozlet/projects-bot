@@ -1,10 +1,8 @@
 import path from 'path'
 import nedb from 'nedb-promises'
 import Discord from 'discord.js'
-import { ProjectSubmission, Project, VoteModificationResult, GitHubLicenseData } from '../typings/interfaces'
+import { ProjectSubmission, Project, VoteModificationResult } from '../typings/interfaces'
 import hasEnoughVotes from '../voting/modifyVotes'
-import { GraphQLClient, gql } from 'graphql-request'
-
 let db: nedb
 
 try {
@@ -17,9 +15,6 @@ try {
   log.error('Exiting...')
   process.exit(1)
 }
-
-const ghClient = new GraphQLClient('https://api.github.com/graphql')
-ghClient.setHeader('Authorization', `Bearer ${process.env.GITHUB_TOKEN}`)
 
 export async function checkForDuplicates (submission: ProjectSubmission): Promise<boolean> {
   // Search for potential duplicates with same source and same name
@@ -178,24 +173,4 @@ export async function adjustDownvotesForProject (type: 'add' | 'remove', id: Dis
 
     return { success: true, wasRejected: hasEnoughDownvotes, wasPaused: project.paused, reason: '', project }
   }
-}
-
-export function isEligibleForLicenseCheck (submission: ProjectSubmission): boolean {
-  return !!submission.links.source.includes('github.com')
-}
-
-export async function hasSPDXLicense (submission: ProjectSubmission): Promise<boolean> {
-  const ghQuery = gql`
-  query ($url: URI!) {
-    resource(url: $url) {
-      ... on Repository {
-        licenseInfo {
-          spdxId
-        }
-      }
-    }
-  }
-  `
-  const licenseData = await ghClient.request(ghQuery, { url: submission.links.source })
-  return !!(licenseData as GitHubLicenseData)?.resource?.licenseInfo
 }

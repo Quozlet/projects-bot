@@ -1,7 +1,8 @@
 import Discord from 'discord.js'
 import safeSendMessage from '../utils/safeSendMessage'
 import parseGformsEmbed from '../parsers/googleFormsEmbed'
-import { checkForDuplicates, hasSPDXLicense, isEligibleForLicenseCheck, registerProject } from '../db'
+import { checkForDuplicates, registerProject } from '../db'
+import { isEligibleForLicenseCheck, hasSPDXLicense } from '../utils/licenseCheck'
 
 export default async (client: Discord.Client, message: Discord.Message): Promise<Discord.Message | undefined> => {
   const { channel } = message
