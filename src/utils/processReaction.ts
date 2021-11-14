@@ -56,7 +56,9 @@ export default async (discordData: ShowcaseDiscordData, internalData: ShowcaseDa
 
     const projectSubmissionsChannelId = process.env.PROJECT_SUBMISSIONS_CHANNEL
     if (projectSubmissionsChannelId) {
-      try { await (guild.channels.cache.get(projectSubmissionsChannelId) as TextChannel | undefined)?.bulkDelete(project.relatedMsgs) } catch (err) {
+      try {
+        await (guild.channels.cache.get(projectSubmissionsChannelId) as TextChannel | undefined)?.bulkDelete(project.relatedMsgs)
+      } catch (err) {
         log.error(`Failed to delete messages related to ${project.name} (${project.id}): ${err}`)
       }
     }
