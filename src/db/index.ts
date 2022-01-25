@@ -52,7 +52,7 @@ export async function suspendVotingForProject (enabled: boolean, id: Discord.Sno
 
   if (!project) {
     log.error(`User ${suspender} attempted to ${enabled ? 'suspend' : 'remove suspension for'} voting on non-existent project ${id}`)
-    return { success: false, wasApproved: false, reason: 'Project not found', project }
+    return { success: false, wasApproved: false, reason: 'Project not found', project, context: 'pause' }
   }
 
   if (!process.env.STAFF_ROLE_ID) {
@@ -63,7 +63,7 @@ export async function suspendVotingForProject (enabled: boolean, id: Discord.Sno
 
   if (!isStaff) {
     log.warn(`User ${suspender} attempted to ${enabled ? 'suspend' : 'remove suspension for'} voting on project ${project.name} (${id}), but user is not staff`)
-    return { success: false, wasApproved: false, reason: 'Member does not have pausing privileges', project }
+    return { success: false, wasApproved: false, reason: 'Member does not have pausing privileges', project, context: 'pause' }
   }
 
   let hasEnoughUpvotes
@@ -73,7 +73,7 @@ export async function suspendVotingForProject (enabled: boolean, id: Discord.Sno
     hasEnoughDownvotes = hasEnoughVotes('down', 'dry', suspender, project)
   } catch (err) {
     // Likely cause here would be misconfiguration, if role IDs and/or voting thresholds are missing or invalid
-    return { success: false, reason: err.message, project }
+    return { success: false, reason: err.message, project, context: 'pause' }
   }
 
   const toUpdate = {
@@ -84,10 +84,10 @@ export async function suspendVotingForProject (enabled: boolean, id: Discord.Sno
   try {
     await db.update({ id }, toUpdate)
   } catch (err) {
-    return { success: false, wasPaused: false, reason: err.message, project }
+    return { success: false, wasPaused: false, reason: err.message, project, context: 'pause' }
   }
 
-  return { success: true, wasPaused: enabled, wasApproved: hasEnoughUpvotes, wasRejected: hasEnoughDownvotes, reason: '', project }
+  return { success: true, wasPaused: enabled, wasApproved: hasEnoughUpvotes, wasRejected: hasEnoughDownvotes, reason: '', project, context: 'pause' }
 }
 
 export async function adjustUpvotesForProject (type: 'add' | 'remove', id: Discord.Snowflake, voter: Discord.GuildMember): Promise<VoteModificationResult> {
@@ -102,10 +102,10 @@ export async function adjustUpvotesForProject (type: 'add' | 'remove', id: Disco
 
   if (!project) {
     log.error(`User ${voter} attempted to ${type === 'add' ? 'upvote' : 'remove upvote for'} non-existent project (${id})`)
-    return { success: false, wasApproved: false, reason: 'Project not found', project }
+    return { success: false, wasApproved: false, reason: 'Project not found', project, context: 'upvote' }
   } else if (!isStaff && !isVeteran) {
     log.warn(`User ${voter} attempted to ${type === 'add' ? 'upvote' : 'remove upvote for'} project ${project.name} (${id}), but member is neither staff nor veteran`)
-    return { success: false, wasApproved: false, reason: 'Member does not have voting privileges', project }
+    return { success: false, wasApproved: false, reason: 'Member does not have voting privileges', project, context: 'upvote' }
   } else {
     let hasEnoughUpvotes
 
@@ -113,7 +113,7 @@ export async function adjustUpvotesForProject (type: 'add' | 'remove', id: Disco
       hasEnoughUpvotes = hasEnoughVotes('up', type, voter, project)
     } catch (err) {
       // Likely cause here would be misconfiguration, if role IDs and/or voting thresholds are missing or invalid
-      return { success: false, wasApproved: false, reason: err.message, project }
+      return { success: false, wasApproved: false, reason: err.message, project, context: 'upvote' }
     }
 
     const toUpdate = {
@@ -127,10 +127,10 @@ export async function adjustUpvotesForProject (type: 'add' | 'remove', id: Disco
     try {
       await db.update({ id }, toUpdate)
     } catch (err) {
-      return { success: false, wasApproved: false, reason: err.message, project }
+      return { success: false, wasApproved: false, reason: err.message, project, context: 'upvote' }
     }
 
-    return { success: true, wasApproved: hasEnoughUpvotes, wasPaused: project.paused, reason: '', project }
+    return { success: true, wasApproved: hasEnoughUpvotes, wasPaused: project.paused, reason: '', project, context: 'upvote' }
   }
 }
 
@@ -146,10 +146,10 @@ export async function adjustDownvotesForProject (type: 'add' | 'remove', id: Dis
 
   if (!project) {
     log.error(`User ${voter} attempted to ${type === 'add' ? 'downvote' : 'remove downvote for'} non-existent project (${id})`)
-    return { success: false, wasRejected: false, reason: 'Project not found', project }
+    return { success: false, wasRejected: false, reason: 'Project not found', project, context: 'downvote' }
   } else if (!isStaff && !isVeteran) {
     log.warn(`User ${voter} attempted to ${type === 'add' ? 'downvote' : 'remove downvote for'} project ${project.name} (${id}), but member is neither staff nor veteran`)
-    return { success: false, wasRejected: false, reason: 'Member does not have voting privileges', project }
+    return { success: false, wasRejected: false, reason: 'Member does not have voting privileges', project, context: 'downvote' }
   } else {
     const hasEnoughDownvotes = hasEnoughVotes('down', type, voter, project)
 
@@ -170,9 +170,9 @@ export async function adjustDownvotesForProject (type: 'add' | 'remove', id: Dis
     try {
       await db.update({ id }, toUpdate)
     } catch (err) {
-      return { success: false, wasRejected: false, reason: err.message, project }
+      return { success: false, wasRejected: false, reason: err.message, project, context: 'downvote' }
     }
 
-    return { success: true, wasRejected: hasEnoughDownvotes, wasPaused: project.paused, reason: '', project }
+    return { success: true, wasRejected: hasEnoughDownvotes, wasPaused: project.paused, reason: '', project, context: 'downvote' }
   }
 }

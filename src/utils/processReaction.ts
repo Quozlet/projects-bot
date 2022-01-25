@@ -6,7 +6,7 @@ import createProjectEmbed from './createProjectEmbed'
 export default async (discordData: ShowcaseDiscordData, internalData: ShowcaseData): Promise<Discord.Message | undefined> => {
   const { result, isPause } = internalData
   const { guild, channel, user, reaction } = discordData
-  const { success, reason, project } = result
+  const { success, reason, project, context } = result
 
   const logChannelId = process.env.PROJECT_LOG_CHANNEL
 
@@ -22,8 +22,11 @@ export default async (discordData: ShowcaseDiscordData, internalData: ShowcaseDa
 
   // Alert of errors during the vote process
   if (!success || !project) {
-    log.error(`Could not register ${user.id}'s vote for project ${project?.name} (${project?.id}): ${reason}`)
-    return await safeSendMessage(channel, `<@${user.id}>: ⚠️ Your vote was not possible to register. (Internal error)`)
+    if (context !== 'pause') {
+      log.error(`Could not register ${user.id}'s vote for project ${project?.name} (${project?.id}): ${reason}`)
+      return await safeSendMessage(channel, `<@${user.id}>: ⚠️ Your vote could not be registered. (Internal error)`)
+    }
+    return
   }
 
   // Only one of these can be true per operation depending on what reaction was used

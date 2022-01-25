@@ -42,6 +42,7 @@ export interface VoteModificationResult {
   wasRejected?: boolean
   wasPaused?: boolean
   reason: string
+  context: 'upvote' | 'downvote' | 'pause'
   project: Project | undefined
 }
 
