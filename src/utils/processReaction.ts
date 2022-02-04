@@ -24,6 +24,7 @@ export default async (discordData: ShowcaseDiscordData, internalData: ShowcaseDa
   if (!success || !project) {
     if (context !== 'pause') {
       log.error(`Could not register ${user.id}'s vote for project ${project?.name} (${project?.id}): ${reason}`)
+      await reaction.users.remove(user)
       return await safeSendMessage(channel, `<@${user.id}>: ⚠️ Your vote could not be registered. (Internal error)`)
     }
     return
